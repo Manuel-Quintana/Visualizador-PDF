@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de PDFs</title>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #pdf-container { width: 80%; margin: 20px auto; }
+        canvas { border: 1px solid black; }
+    </style>
+</head>
+<body>
+
+    <h2>Buscar y Visualizar PDF</h2>
+    <input type="text" id="nombrePDF" placeholder="Escribe el nombre del PDF">
+    <button onclick="buscarPDF()">Buscar</button>
+
+    <div id="pdf-container">
+        <canvas id="pdf-canvas"></canvas>
+    </div>
+
+    <script>
+        const pdfs = {
+            "documento1": "https://drive.google.com/uc?export=view&id=1ABC2DEF3GHIJ",
+            "manual": "https://drive.google.com/uc?export=view&id=2XYZ4LMNOPQR",
+            "ejemplo": "https://vitecs-my.sharepoint.com/:f:/g/personal/mquintana_vigatec_com/EpcjNC0oMn1Bq8kPJW8e2M8BvSksgtLEkX9BZce4R5EFDQ?e=1QYLuf9"
+        };
+
+        function buscarPDF() {
+            const nombre = document.getElementById("nombrePDF").value.trim().toLowerCase();
+            if (!pdfs[nombre]) {
+                alert("No se encontró el PDF. Verifica el nombre.");
+                return;
+            }
+
+            const pdfUrl = pdfs[nombre];
+            cargarPDF(pdfUrl);
+        }
+
+        function cargarPDF(url) {
+            const pdfContainer = document.getElementById("pdf-container");
+            pdfContainer.innerHTML = '<canvas id="pdf-canvas"></canvas>';
+
+            const loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(pdf => {
+                pdf.getPage(1).then(page => {
+                    const scale = 1.5;
+                    const viewport = page.getViewport({ scale });
+                    const canvas = document.getElementById("pdf-canvas");
+                    const context = canvas.getContext("2d");
+
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = { canvasContext: context, viewport };
+                    page.render(renderContext);
+                });
+            }).catch(error => {
+                alert("Error al cargar el PDF.");
+                console.error(error);
+            });
+        }
+    </script>
+
+</body>
+</html>
